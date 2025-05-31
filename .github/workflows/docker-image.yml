@@ -66,7 +66,7 @@ jobs:
         with:
           context: ./frontend
           push: true
-          tags: daviiel/foodgram-frontend:v1.1
+          tags: daviiel/foodgram-frontend:v1.0
 
   deploy:
     runs-on: ubuntu-latest
