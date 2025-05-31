@@ -1,0 +1,5 @@
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py collectstatic --noinput
+docker compose exec backend python manage.py load_ingredients
+docker compose exec backend python manage.py load_users
+docker compose exec backend python manage.py load_recipes
