@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.shortcuts import get_object_or_404
-
+from django.db.models import Exists, OuterRef
 from recipes.models import Recipe, Ingredient, Favorite, ShoppingCart, User
 from .serializers import (
     RecipeListSerializer,
@@ -35,13 +35,29 @@ class IngredientViewSet(
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    """ViewSet  Рецептов: [GET, POST, DELETE, PATCH]."""
+    """ViewSet Рецептов: [GET, POST, DELETE, PATCH]."""
 
     queryset = Recipe.objects.all()
     permission_classes = (IsOwnerOrAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     pagination_class = ApiPagination
     filterset_class = RecipeFilter
+
+    """Проверка нахождения рецепта в избранном у текущего пользователя"""
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+        
+        if user.is_authenticated:
+            queryset = queryset.annotate(
+                is_favorited=Exists(
+                    Favorite.objects.filter(
+                        author=user,
+                        recipe=OuterRef('pk')
+                    )
+                )
+            )
+        return queryset
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
@@ -52,29 +68,31 @@ class RecipeViewSet(viewsets.ModelViewSet):
         detail=True,
         methods=["post", "delete"],
         permission_classes=[IsAuthenticated],
+        url_path="favorite",
     )
-    def favorite(self, request, *args, **kwargs):
-        """Управление избранными рецептами."""
-        recipe = get_object_or_404(Recipe, id=self.kwargs.get("pk"))
+    def favorite(self, request, pk=None):
+        # Получаем рецепт
+        recipe = get_object_or_404(Recipe, pk=pk)
         user = request.user
 
         if request.method == "POST":
-            if Favorite.objects.filter(author=user, recipe=recipe).exists():
+            if user.favorite.filter(recipe=recipe).exists():
                 return Response(
-                    {"errors": "Рецепт уже добавлен!"},
+                    {"error": "Рецепт уже в избранном!"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            Favorite.objects.create(author=user, recipe=recipe)
+            # Создаём запись в избранном
+            user.favorite.create(recipe=recipe)
             serializer = FavoriteSerializer(
                 recipe, context={"request": request}
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        favorite = get_object_or_404(Favorite, author=user, recipe=recipe)
+        favorite = get_object_or_404(user.favorite, recipe=recipe)
         favorite.delete()
         return Response(
-            "Рецепт успешно удалён из избранного.",
+            {"message": "Рецепт удалён из избранного."},
             status=status.HTTP_204_NO_CONTENT,
         )
 
@@ -89,15 +107,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
 
         if request.method == "POST":
-            if ShoppingCart.objects.filter(
-                author=user, recipe=recipe
-            ).exists():
+            if user.shopping_cart.filter(recipe=recipe).exists():
                 return Response(
                     {"errors": "Рецепт уже добавлен!"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-
-            ShoppingCart.objects.create(author=user, recipe=recipe)
+            user.shopping_cart.create(recipe=recipe)
             serializer = ShoppingCartSerializer(
                 recipe, context={"request": request}
             )

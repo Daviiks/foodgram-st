@@ -12,7 +12,7 @@ from .models import (
 
 class IngredientsInline(admin.TabularInline):
     """
-    Админ-зона для интеграции добавления ингридиентов в рецепты.
+    Админка для интеграции добавления ингридиентов в рецепты.
     """
 
     model = Recipe.ingredients.through
@@ -21,7 +21,7 @@ class IngredientsInline(admin.TabularInline):
 
 class SubscrationAdmin(admin.ModelAdmin):
     """
-    Админ-зона подписок.
+    Админка подписок.
     """
 
     list_display = ("user", "author")
@@ -31,7 +31,7 @@ class SubscrationAdmin(admin.ModelAdmin):
 
 class FavoriteAdmin(admin.ModelAdmin):
     """
-    Админ-зона избранных рецептов.
+    Админка избранных рецептов.
     """
 
     list_display = ("author", "recipe")
@@ -41,7 +41,7 @@ class FavoriteAdmin(admin.ModelAdmin):
 
 class ShoppingCartAdmin(admin.ModelAdmin):
     """
-    Админ-зона покупок.
+    Админка покупок.
     """
 
     list_display = ("author", "recipe")
@@ -51,7 +51,7 @@ class ShoppingCartAdmin(admin.ModelAdmin):
 
 class IngredientRecipeAdmin(admin.ModelAdmin):
     """
-    Админ-зона ингридентов для рецептов.
+    Админка ингридентов для рецептов.
     """
 
     list_display = (
@@ -66,8 +66,7 @@ class IngredientRecipeAdmin(admin.ModelAdmin):
 
 class RecipeAdmin(admin.ModelAdmin):
     """
-    Админ-зона рецептов.
-    Добавлен просмотр кол-ва добавленных рецептов в избранное.
+    Админка рецептов.
     """
 
     list_display = ("id", "author", "name", "pub_date", "in_favorite")
@@ -77,11 +76,14 @@ class RecipeAdmin(admin.ModelAdmin):
     inlines = [IngredientsInline]
     list_select_related = ("author",)
 
+    """
+    Просмотр кол-ва добавленных рецептов в избранное
+    """
     def get_queryset(self, request):
         return (
             super()
             .get_queryset(request)
-            .annotate(favorites_count=Count("favorites"))
+            .annotate(favorites_count=Count("favorite"))
         )
 
     def in_favorite(self, obj):
@@ -93,7 +95,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
 class IngredientAdmin(admin.ModelAdmin):
     """
-    Админ-зона ингридиентов.
+    Админка ингридиентов.
     """
 
     list_display = ("name", "measurement_unit")

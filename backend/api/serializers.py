@@ -12,7 +12,12 @@ from recipes.models import (
     Follow,
 )
 from users.serializers import UserSerializer
+from http import HTTPStatus
 
+MIN_AMOUNT = 1
+MAX_AMOUNT = 32000
+MIN_COOKING_TIME = 1
+MAX_COOKING_TIME = 32000
 
 class FavoriteSerializer(serializers.ModelSerializer):
     """Serializer для Подписок."""
@@ -78,7 +83,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
     ingredients = IngredientRecipeSerializer(
         many=True, source="recipe_ingredients", read_only=True
     )
-    is_favorited = serializers.SerializerMethodField()
+    is_favorited = serializers.BooleanField(read_only=True)
     is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
@@ -96,16 +101,14 @@ class RecipeListSerializer(serializers.ModelSerializer):
         )
 
     def get_is_favorited(self, obj) -> bool:
-        user = self.context.get("request").user
-        return (
-            user.is_authenticated and obj.favorite.filter(recipe=obj).exists()
-        )
+        request = self.context["request"]
+        return request.user.is_authenticated and obj.favorites.filter(
+            user=request.user).exists()
 
     def get_is_in_shopping_cart(self, obj):
-        user = self.context.get("request").user
-        if not user.is_anonymous:
-            return ShoppingCart.objects.filter(recipe=obj).exists()
-        return False
+        request = self.context["request"]
+        return (request.user.is_authenticated
+            and obj.shopping_cart.filter(author=request.user).exists())
 
 
 class AddIngredientSerializer(serializers.ModelSerializer):
@@ -114,7 +117,8 @@ class AddIngredientSerializer(serializers.ModelSerializer):
     """
 
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    amount = serializers.IntegerField()
+    amount = serializers.IntegerField(
+        min_value=MIN_AMOUNT, max_value=MAX_AMOUNT)
 
     class Meta:
         model = IngredientRecipe
@@ -127,6 +131,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     ingredients = AddIngredientSerializer(many=True, write_only=True)
     image = Base64ImageField()
     author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    cooking_time = serializers.IntegerField(
+        min_value=MIN_COOKING_TIME, max_value=MAX_COOKING_TIME
+    )
 
     class Meta:
         model = Recipe
@@ -141,19 +148,17 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def validate_ingredients(self, value):
         if not value:
-            raise ValidationError({"ingredients": "Нужно выбрать ингредиент!"})
+            raise ValidationError(
+                {"ingredients": "Нужно выбрать ингредиент!"},
+                code=HTTPStatus.BAD_REQUEST,
+            )
 
         ingredient_ids = [item["id"].id for item in value]
         if len(ingredient_ids) != len(set(ingredient_ids)):
             raise ValidationError(
-                {"ingredients": "Ингредиенты не должны повторяться!"}
+                {"ingredients": "Ингредиенты не должны повторяться!"},
+                code=HTTPStatus.BAD_REQUEST,
             )
-
-        for item in value:
-            if int(item["amount"]) <= 0:
-                raise ValidationError(
-                    {"amount": "Количество должно быть больше 0!"}
-                )
 
         return value
 
@@ -183,11 +188,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation["ingredients"] = IngredientRecipeSerializer(
-            instance.recipe_ingredients.all(), many=True
-        ).data
-        return representation
+        request = self.context.get("request")
+        context = {"request": request}
+        return RecipeListSerializer(instance, context=context).data
 
 
 class RecipeMiniSerializer(serializers.ModelSerializer):
@@ -230,7 +233,7 @@ class FollowSerializer(serializers.ModelSerializer):
         """Возвращает QuerySet рецептов автора с учётом лимита."""
         request = self.context.get("request")
         limit = request.GET.get("recipes_limit")
-        queryset = Recipe.objects.filter(author=author)
+        queryset = author.recipes.all()
         return (
             queryset[: int(limit)] if limit and limit.isdigit() else queryset
         )
@@ -242,9 +245,7 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def get_recipes_count(self, obj) -> int:
         """Количество рецептов автора (оптимизация через кэш QuerySet)."""
-        if not hasattr(obj, "_recipes_count"):
-            obj._recipes_count = self._get_author_recipes(obj.author).count()
-        return obj._recipes_count
+        return obj.author.recipes.count()
 
     def validate(self, data):
         """Проверка возможности подписки."""
@@ -252,7 +253,9 @@ class FollowSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
 
         if user == author:
-            raise ValidationError("Нельзя подписаться на себя!", code=400)
-        if Follow.objects.filter(user=user, author=author).exists():
-            raise ValidationError("Вы уже подписаны!", code=400)
+            raise ValidationError(
+                "Нельзя подписаться на себя!", code=HTTPStatus.BAD_REQUEST)
+        if user.follower.filter(author=author).exists():
+            raise ValidationError(
+                "Вы уже подписаны!", code=HTTPStatus.BAD_REQUEST)
         return data
