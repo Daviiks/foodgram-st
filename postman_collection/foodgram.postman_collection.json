@@ -1,4 +1,4 @@
-{
+﻿{
 	"info": {
 		"_postman_id": "530f87e9-6f95-42da-8389-5a431b9dc149",
 		"name": "diploma",
@@ -9600,7 +9600,7 @@
 	"variable": [
 		{
 			"key": "baseUrl",
-			"value": "http://127.0.0.1:8000",
+			"value": "http://127.0.0.1",
 			"type": "string"
 		},
 		{
