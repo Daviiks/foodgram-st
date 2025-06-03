@@ -102,7 +102,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj) -> bool:
         request = self.context["request"]
-        return request.user.is_authenticated and obj.favorites.filter(
+        return request.user.is_authenticated and obj.favorite.filter(
             user=request.user).exists()
 
     def get_is_in_shopping_cart(self, obj):
@@ -145,6 +145,20 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             "cooking_time",
             "author",
         )
+
+    def validate(self, data):
+        """Валидация перед созданием/обновлением рецепта"""
+        if 'ingredients' not in data:
+            raise serializers.ValidationError(
+                {"ingredients": "Это поле обязательно"},
+                code='required'
+            )
+        if 'image' not in data:
+            raise serializers.ValidationError(
+                {"image": "Это поле обязательно"}, 
+                code='required'
+            )
+        return data
 
     def validate_ingredients(self, value):
         if not value:

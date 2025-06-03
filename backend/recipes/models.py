@@ -37,7 +37,41 @@ class Recipe(models.Model):
     Рецепты.
     У автора не может быть создано более одного рецепта с одним именем.
     """
+    ingredients = models.ManyToManyField(
+        Ingredient, through="IngredientRecipe", verbose_name="Ингредиенты"
+    )
 
+    image = models.ImageField(
+        verbose_name="Картинка рецепта",
+        upload_to="recipes/images/",
+        help_text="Добавьте изображение рецепта",
+    )
+
+    name = models.CharField(
+        verbose_name="Название рецепта",
+        max_length=200,
+        help_text="Введите название рецепта",
+        db_index=True,
+    )
+
+    text = models.TextField(
+        verbose_name="Описание рецепта",
+        help_text="Опишите приготовление рецепта",
+    )
+
+    cooking_time = models.PositiveSmallIntegerField(
+        verbose_name="Время приготовления",
+        validators=[
+            MinValueValidator(
+                MIN_COOKING_TIME, "Минимальное время приготовления"
+                ),
+            MaxValueValidator(
+                MAX_COOKING_TIME, "Максимальное время приготовления"
+                )
+        ],
+        help_text="Укажите время приготовления рецепта в минутах",
+    )
+    
     author = models.ForeignKey(
         User,
         verbose_name="Автор рецепта",
@@ -45,32 +79,7 @@ class Recipe(models.Model):
         help_text="Автор рецепта",
         related_name="recipes",
     )
-    ingredients = models.ManyToManyField(
-        Ingredient, through="IngredientRecipe", verbose_name="Ингредиенты"
-    )
-    text = models.TextField(
-        verbose_name="Описание рецепта",
-        help_text="Опишите приготовление рецепта",
-    )
-    name = models.CharField(
-        verbose_name="Название рецепта",
-        max_length=200,
-        help_text="Введите название рецепта",
-        db_index=True,
-    )
-    cooking_time = models.PositiveSmallIntegerField(
-        verbose_name="Время приготовления",
-        validators=[
-            MinValueValidator(MIN_COOKING_TIME, "Минимальное время приготовления"),
-            MaxValueValidator(MAX_COOKING_TIME, "Максимальное время приготовления")
-        ],
-        help_text="Укажите время приготовления рецепта в минутах",
-    )
-    image = models.ImageField(
-        verbose_name="Картинка рецепта",
-        upload_to="recipes/images/",
-        help_text="Добавьте изображение рецепта",
-    )
+
     pub_date = models.DateTimeField(
         verbose_name="Дата публикации", auto_now_add=True
     )
@@ -110,8 +119,12 @@ class IngredientRecipe(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         validators=[
-            MinValueValidator(MIN_AMOUNT, "Минимальное количество ингредиентов 1"),
-            MaxValueValidator(MAX_AMOUNT, "Максимальное количество ингредиентов 32000")
+            MinValueValidator(
+                MIN_AMOUNT, "Минимальное количество ингредиентов 1"
+                ),
+            MaxValueValidator(
+                MAX_AMOUNT, "Максимальное количество ингредиентов 32000"
+                )
         ],
         verbose_name="Количество",
         help_text="Укажите количество ингредиента",

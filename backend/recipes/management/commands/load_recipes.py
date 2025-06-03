@@ -1,7 +1,7 @@
 ﻿import json
 import os
 from django.core.management.base import BaseCommand
-from recipes.models import Recipe, Ingredient, IngredientInRecipe
+from recipes.models import Recipe, Ingredient, IngredientRecipe
 from django.contrib.auth import get_user_model
 from django.core.files.images import ImageFile
 
@@ -49,7 +49,7 @@ class Command(BaseCommand):
                     name=ingredient_info["name"]
                 ).first()
                 if ingredient:
-                    IngredientInRecipe.objects.create(
+                    IngredientRecipe.objects.create(
                         recipe=recipe,
                         ingredient=ingredient,
                         amount=ingredient_info["amount"],

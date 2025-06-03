@@ -118,7 +118,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        cart_item = get_object_or_404(ShoppingCart, author=user, recipe=recipe)
+        cart_item = get_object_or_404(
+            ShoppingCart, author=user, recipe=recipe)
         cart_item.delete()
         return Response(
             "Рецепт успешно удалён из списка покупок.",

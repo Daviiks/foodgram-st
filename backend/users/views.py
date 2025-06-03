@@ -25,17 +25,51 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def me(self, request):
         """Кастомное получение профиля пользователя."""
-        serializer = UserSerializer(request.user, context={"request": request})
+        serializer = UserSerializer(
+            request.user, context={"request": request})
         return Response(serializer.data)
 
-    @action(detail=False, methods=['PUT'], url_path='me/avatar',
-           permission_classes=[IsAuthenticated])
+    @action(
+        detail=False,
+        methods=['PUT', 'DELETE'],
+        url_path='me/avatar',
+        serializer_class=UserAvatarSerializer,
+        )
     def avatar(self, request):
-        user = request.user
-        serializer = self.get_serializer(user, data=request.data, partial=True)
+        if request.method == 'PUT':
+            return self._update_avatar(request)
+        return self._delete_avatar(request)
+
+    def _update_avatar(self, request):
+        if not request.user.is_authenticated:
+            return Response(
+                {'error': 'Требуется авторизация'}, 
+                status=status.HTTP_401_UNAUTHORIZED)
+        if 'avatar' not in request.data:
+            return Response(
+                {'error': 'Требуется аватар'}, 
+                status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(
+            request.user, data=request.data, partial=True
+            )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+    def _delete_avatar(self, request):
+        if not request.user.is_authenticated:
+            return Response(
+                {'error': 'Требуется авторизация'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+                )
+        if not request.user.avatar:
+            return Response(
+                {'error': 'Аватара не существует'}, 
+                status=status.HTTP_400_BAD_REQUEST
+                )
+        request.user.avatar.delete()
+        request.user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(["post"], detail=False, permission_classes=[IsAuthenticated])
     def set_password(self, request, *args, **kwargs):
@@ -74,7 +108,6 @@ class UserViewSet(viewsets.ModelViewSet):
                 serializer.data,
                 status=status.HTTP_201_CREATED,
             )
-
         subscription = get_object_or_404(
             user.follower,
             author=author

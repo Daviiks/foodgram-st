@@ -1,4 +1,5 @@
 ﻿from rest_framework import serializers
+from drf_extra_fields.fields import Base64ImageField
 from .models import User
 
 
@@ -12,13 +13,14 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            "email",
             "id",
+            "email",
             "username",
             "first_name",
             "last_name",
-            "password",
             "is_subscribed",
+            "password",
+            "avatar",
         )
         extra_kwargs = {
             "password": {"write_only": True},
@@ -35,8 +37,10 @@ class UserSerializer(serializers.ModelSerializer):
         return User.objects.create_user(**validated_data)
 
 
-class UserAvatarSerializer(serializers.ModelSerializer):
-    avatar = serializers.ImageField(required=True)
+class UserAvatarSerializer(UserSerializer):
+    """Сериализатор для аватара пользователя."""
+
+    avatar = Base64ImageField()
 
     class Meta:
         model = User
