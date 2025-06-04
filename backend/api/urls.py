@@ -1,6 +1,6 @@
 ﻿from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import RecipeViewSet, IngredientViewSet
+from .views import RecipeViewSet, IngredientViewSet, RecipeShortLinkView
 from users.views import UserViewSet
 
 
@@ -16,4 +16,5 @@ urlpatterns = [
     path('users/me/avatar/', UserViewSet.as_view({'put': 'avatar', 'delete': 'avatar'}), 
          name='user-avatar'
          ),
+    path('shortlink/', RecipeShortLinkView.as_view(), name='recipe-shortlink'),
 ]

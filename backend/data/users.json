@@ -1,27 +1,42 @@
-﻿[
+[
   {
-    "email": "alla@example.com",
-    "username": "alla",
-    "first_name": "Алла",
-    "last_name": "Снежнова",
+    "email": "chef_italiano@example.com",
+    "username": "chef_italiano",
+    "first_name": "Сhef",
+    "last_name": "Italiano",
     "password": "12345",
     "is_staff": false
   },
   {
-    "email": "kristina@example.com",
-    "username": "kris",
-    "first_name": "Кристина",
-    "last_name": "Гончаренко",
+    "email": "greek_chef@example.com",
+    "username": "greek_chef",
+    "first_name": "Greek",
+    "last_name": "Chef",
     "password": "12345",
     "is_staff": false
   },
   {
-    "email": "vasya@example.com",
-    "username": "vasek",
-    "first_name": "Василий",
-    "last_name": "Кузнецов",
+    "email": "dessert_master @example.com",
+    "username": "dessert_master",
+    "first_name": "Dessert",
+    "last_name": "Master",
+    "password": "12345",
+    "is_staff": false
+  },
+  {
+    "email": "soup_lover@example.com",
+    "username": "soup_lover",
+    "first_name": "Soup",
+    "last_name": "Lover",
+    "password": "12345",
+    "is_staff": false
+  },
+  {
+    "email": "burger_king@example.com",
+    "username": "burger_king",
+    "first_name": "Burger",
+    "last_name": "King",
     "password": "12345",
     "is_staff": false
   }
-
 ]

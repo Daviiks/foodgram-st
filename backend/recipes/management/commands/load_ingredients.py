@@ -1,5 +1,7 @@
 ﻿import csv
+import os
 from django.core.management.base import BaseCommand
+from django.conf import settings
 from recipes.models import Ingredient
 
 
@@ -8,7 +10,7 @@ class Command(BaseCommand):
         parser.add_argument("--path", type=str, help="Путь к файлу")
 
     def handle(self, *args, **options):
-        file_path = options["path"] + "ingredients.csv"
+        file_path = os.path.join(settings.BASE_DIR, options["path"])
         with open(file_path, "r") as csv_file:
             reader = csv.reader(csv_file)
 

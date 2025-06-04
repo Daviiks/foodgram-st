@@ -2,6 +2,7 @@
 import os
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 User = get_user_model()
 
@@ -9,7 +10,7 @@ User = get_user_model()
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        file_path = os.path.join("data", "users.json")
+        file_path = os.path.join(settings.BASE_DIR, options["path"])
 
         with open(file_path, "r", encoding="utf-8") as file:
             users = json.load(file)
@@ -32,3 +33,10 @@ class Command(BaseCommand):
                 self.stdout.write(
                     f'Пользователь {user_data["username"]} уже существует'
                 )
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--path",
+            type=str,
+            default="data/recipes.json",
+        )

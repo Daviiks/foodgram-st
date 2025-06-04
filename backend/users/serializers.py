@@ -25,6 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "password": {"write_only": True},
             "is_subscribed": {"read_only": True},
+            "avatar": {"read_only": True},
         }
 
     def get_is_subscribed(self, obj):

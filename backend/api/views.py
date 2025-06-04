@@ -1,4 +1,4 @@
-﻿from rest_framework import viewsets
+﻿from rest_framework import viewsets, generics
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import mixins
@@ -15,6 +15,7 @@ from .serializers import (
     FavoriteSerializer,
     ShoppingCartSerializer,
     RecipeWriteSerializer,
+    RecipeShortLinkSerializer,
 )
 from .services import shopping_cart
 from .permissions import IsOwnerOrAdminOrReadOnly
@@ -136,3 +137,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 "Список покупок пуст.", status=status.HTTP_404_NOT_FOUND
             )
         return shopping_cart(self, request, request.user)
+
+
+class RecipeShortLinkView(generics.CreateAPIView):
+    """Представление для создания короткой ссылки на рецепт"""
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeShortLinkSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

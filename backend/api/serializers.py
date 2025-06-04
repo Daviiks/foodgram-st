@@ -21,13 +21,12 @@ MAX_COOKING_TIME = 32000
 
 class FavoriteSerializer(serializers.ModelSerializer):
     """Serializer для Подписок."""
-
+    id = serializers.PrimaryKeyRelatedField(source="recipe", read_only=True)
     name = serializers.ReadOnlyField(source="recipe.name", read_only=True)
     image = serializers.ImageField(source="recipe.image", read_only=True)
     cooking_time = serializers.IntegerField(
         source="recipe.cooking_time", read_only=True
     )
-    id = serializers.PrimaryKeyRelatedField(source="recipe", read_only=True)
 
     class Meta:
         model = Favorite
@@ -36,13 +35,13 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
     """Serializer для Корзины."""
-
+    id = serializers.PrimaryKeyRelatedField(source="recipe", read_only=True)
     name = serializers.ReadOnlyField(source="recipe.name", read_only=True)
     image = serializers.ImageField(source="recipe.image", read_only=True)
     cooking_time = serializers.IntegerField(
         source="recipe.cooking_time", read_only=True
     )
-    id = serializers.PrimaryKeyRelatedField(source="recipe", read_only=True)
+ 
 
     class Meta:
         model = ShoppingCart
@@ -83,7 +82,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
     ingredients = IngredientRecipeSerializer(
         many=True, source="recipe_ingredients", read_only=True
     )
-    is_favorited = serializers.BooleanField(read_only=True)
+    is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
@@ -100,10 +99,11 @@ class RecipeListSerializer(serializers.ModelSerializer):
             "cooking_time",
         )
 
+
     def get_is_favorited(self, obj) -> bool:
         request = self.context["request"]
         return request.user.is_authenticated and obj.favorite.filter(
-            user=request.user).exists()
+            author=request.user).exists()
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context["request"]
@@ -153,7 +153,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 {"ingredients": "Это поле обязательно"},
                 code='required'
             )
-        if 'image' not in data:
+        if 'image' not in data or not data['image']:
             raise serializers.ValidationError(
                 {"image": "Это поле обязательно"}, 
                 code='required'
@@ -212,7 +212,7 @@ class RecipeMiniSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ("id", "name", "cooking_time", "image")
+        fields = ("id", "name", "image", "cooking_time")
 
 
 class FollowSerializer(serializers.ModelSerializer):
@@ -226,6 +226,7 @@ class FollowSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = Follow
@@ -238,6 +239,7 @@ class FollowSerializer(serializers.ModelSerializer):
             "is_subscribed",
             "recipes",
             "recipes_count",
+            "avatar",
         )
 
     def get_is_subscribed(self, obj) -> bool:
@@ -261,6 +263,12 @@ class FollowSerializer(serializers.ModelSerializer):
         """Количество рецептов автора (оптимизация через кэш QuerySet)."""
         return obj.author.recipes.count()
 
+    def get_avatar(self, obj):
+        request = self.context.get('request')
+        if obj.author.avatar:
+            return request.build_absolute_uri(obj.author.avatar.url)
+        return None
+
     def validate(self, data):
         """Проверка возможности подписки."""
         author = self.context["author"]
@@ -273,3 +281,16 @@ class FollowSerializer(serializers.ModelSerializer):
             raise ValidationError(
                 "Вы уже подписаны!", code=HTTPStatus.BAD_REQUEST)
         return data
+
+
+class RecipeShortLinkSerializer(serializers.ModelSerializer):
+    """Serializer для короткой ссылки на рецепт"""
+    short_link = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Recipe
+        fields = ("short_link",)
+
+    def get_short_link(self, obj):
+        request = self.context.get('request')
+        return f"http://{request.get_host()}/r/{obj.id}"

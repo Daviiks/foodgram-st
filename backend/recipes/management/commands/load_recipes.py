@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 from recipes.models import Recipe, Ingredient, IngredientRecipe
 from django.contrib.auth import get_user_model
 from django.core.files.images import ImageFile
+from django.conf import settings
 
 User = get_user_model()
 
@@ -11,7 +12,7 @@ User = get_user_model()
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        file_path = os.path.join("data", "recipes.json")
+        file_path = os.path.join(settings.BASE_DIR, options["path"])
 
         with open(file_path, "r", encoding="utf-8") as file:
             recipes = json.load(file)
@@ -36,7 +37,7 @@ class Command(BaseCommand):
             )
 
             if recipe_data.get("image"):
-                image_path = os.path.join("data", recipe_data["image"])
+                image_path = os.path.join(settings.BASE_DIR, "data", recipe_data["image"])
                 with open(image_path, "rb") as img_file:
                     recipe.image.save(
                         os.path.basename(image_path),
@@ -57,3 +58,9 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.SUCCESS(f"Создан рецепт: {recipe.name}")
             )
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--path",
+            type=str,
+            default="data/recipes.json",
+        )

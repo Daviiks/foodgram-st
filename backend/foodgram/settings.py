@@ -9,7 +9,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = os.getenv("DEBUG", "1")
 
-ALLOWED_HOSTS = ["127.0.0.1", "backend", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 

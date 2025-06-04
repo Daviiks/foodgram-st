@@ -37,15 +37,6 @@ class Recipe(models.Model):
     Рецепты.
     У автора не может быть создано более одного рецепта с одним именем.
     """
-    ingredients = models.ManyToManyField(
-        Ingredient, through="IngredientRecipe", verbose_name="Ингредиенты"
-    )
-
-    image = models.ImageField(
-        verbose_name="Картинка рецепта",
-        upload_to="recipes/images/",
-        help_text="Добавьте изображение рецепта",
-    )
 
     name = models.CharField(
         verbose_name="Название рецепта",
@@ -54,9 +45,8 @@ class Recipe(models.Model):
         db_index=True,
     )
 
-    text = models.TextField(
-        verbose_name="Описание рецепта",
-        help_text="Опишите приготовление рецепта",
+    ingredients = models.ManyToManyField(
+        Ingredient, through="IngredientRecipe", verbose_name="Ингредиенты"
     )
 
     cooking_time = models.PositiveSmallIntegerField(
@@ -72,6 +62,19 @@ class Recipe(models.Model):
         help_text="Укажите время приготовления рецепта в минутах",
     )
     
+    text = models.TextField(
+        verbose_name="Описание рецепта",
+        help_text="Опишите приготовление рецепта",
+        max_length=256
+    )
+
+    image = models.ImageField(
+        verbose_name="Картинка рецепта",
+        upload_to="recipes/images/",
+        help_text="Добавьте изображение рецепта",
+        default=None,
+    )
+
     author = models.ForeignKey(
         User,
         verbose_name="Автор рецепта",

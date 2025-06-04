@@ -29,12 +29,12 @@ class User(AbstractUser):
         default=USER,
         verbose_name="Пользовательская роль",
     )
-    avatar = models.ImageField(upload_to='users/',
+    avatar = models.ImageField(upload_to='users/avatars/',
         blank=True, null=True,
         verbose_name='Аватар',
     )
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username", "password", "first_name", "last_name"]
+    REQUIRED_FIELDS = ["username", "first_name", "last_name"]
 
     class Meta:
         verbose_name = "Пользователь"
