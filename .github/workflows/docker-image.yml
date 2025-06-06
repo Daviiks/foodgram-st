@@ -56,7 +56,7 @@ jobs:
       
       - name: Load initial data
         run: |
-          docker compose -f ./infra/docker-compose.yml up -d --wait
+          docker compose -f ./infra/docker-compose.yml up -d backend db
           sleep 10
           docker compose -f ./infra/docker-compose.yml exec -T foodgram-backend mkdir -p /app/data
           docker compose -f ./infra/docker-compose.yml cp ./data/ingredients.csv foodgram-backend:/app/backend/data/ingredients.csv
