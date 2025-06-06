@@ -50,7 +50,7 @@ jobs:
         run: |
           docker compose -f ./infra/docker-compose.yml cp ./data/ingredients.csv db:/tmp/
     
-          docker compose -f ./infra/docker-compose.yml exec -T db foodgram \
+          docker compose -f ./infra/docker-compose.yml exec -T db foodgram psql \
           -U ${{ secrets.POSTGRES_USER }} \
           -d ${{ secrets.POSTGRES_DB }} \
           -c "COPY recipes_ingredient(name, measurement_unit) FROM '/tmp/ingredients.csv' DELIMITER ',' CSV HEADER;"
