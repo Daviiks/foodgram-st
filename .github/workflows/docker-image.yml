@@ -53,10 +53,6 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:frontend-${{ github.sha }}
-
-      - name: Wait for DB to be ready
-        run: |
-          docker compose exec -T foodgram-db sh -c 'while ! pg_isready -U $POSTGRES_USER -d $POSTGRES_DB; do sleep 1; done'
       
       - name: Load initial data
         run: |
