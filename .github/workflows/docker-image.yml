@@ -40,17 +40,17 @@ jobs:
       - name: Build and push backend
         uses: docker/build-push-action@v4
         with:
-          context: ./foodgram-st/backend
-          file: ./foodgram-st/backend/Dockerfile
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
           tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:backend-${{ github.sha }}
 
       - name: Build and push frontend
-        if: exists('./foodgram-st/frontend/Dockerfile')
+        if: exists('./frontend/Dockerfile')
         uses: docker/build-push-action@v4
         with:
-          context: ./foodgram-st/frontend
-          file: ./foodgram-st/frontend/Dockerfile
+          context: ./frontend
+          file: ./frontend/Dockerfile
           push: true
           tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:frontend-${{ github.sha }}
 
