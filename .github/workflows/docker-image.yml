@@ -46,7 +46,6 @@ jobs:
           tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:backend-${{ github.sha }}
 
       - name: Build and push frontend
-        if: exists('./frontend/Dockerfile')
         uses: docker/build-push-action@v4
         with:
           context: ./frontend
