@@ -1,10 +1,10 @@
 [![Foodgram](https://github.com/Daviiks/foodgram-st/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Daviiks/foodgram-st/actions/workflows/docker-image.yml)
 1.https://hub.docker.com/r/daviiel/foodgram-backend
 
-#Инструкция
-#Запуск приложения
-#Импортирование ингредиентов
-#Конфигурация foodgram-backend
+# Инструкция
+# Запуск приложения
+# Импортирование ингредиентов
+# Конфигурация foodgram-backend
 Инструкция
 Запуск приложения
 Запустить приложение можно двумя способами.
