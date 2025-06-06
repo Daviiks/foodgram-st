@@ -1,6 +1,5 @@
 ﻿from django.db import models
-from django.core.validators import (FileExtensionValidator, 
-                                    RegexValidator)
+from django.core.validators import  RegexValidator
 from django.contrib.auth.models import AbstractUser
 
 
@@ -20,9 +19,6 @@ class User(AbstractUser):
     email = models.EmailField("email-адрес", unique=True)
     username = models.CharField("Логин", max_length=150, unique=True,
                                 validators=[username_validator])
-    first_name = models.CharField("Имя", max_length=150)
-    last_name = models.CharField("Фамилия", max_length=150)
-    password = models.CharField(max_length=150, verbose_name="Пароль")
     role = models.CharField(
         max_length=150,
         choices=ROLE_USER,

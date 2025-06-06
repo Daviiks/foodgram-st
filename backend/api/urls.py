@@ -1,6 +1,6 @@
 ﻿from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import RecipeViewSet, IngredientViewSet, RecipeShortLinkView
+from .views import RecipeViewSet, IngredientViewSet, ShortLinkRedirectView
 from users.views import UserViewSet
 
 
@@ -13,8 +13,11 @@ urlpatterns = [
     path('', include(router.urls)),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
-    path('users/me/avatar/', UserViewSet.as_view({'put': 'avatar', 'delete': 'avatar'}), 
+    path('users/me/avatar/', 
+         UserViewSet.as_view({'put': 'avatar', 'delete': 'avatar'}), 
          name='user-avatar'
          ),
-    path('shortlink/', RecipeShortLinkView.as_view(), name='recipe-shortlink'),
+    path('s/<str:short_code>/', 
+         ShortLinkRedirectView.as_view(), 
+         name='short-link-redirect'),
 ]

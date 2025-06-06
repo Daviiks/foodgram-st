@@ -3,6 +3,8 @@ from rest_framework.exceptions import ValidationError
 from drf_extra_fields.fields import Base64ImageField
 from django.shortcuts import get_object_or_404
 from django.db.models import QuerySet
+from django.urls import reverse
+from urllib.parse import urljoin
 from recipes.models import (
     Recipe,
     Ingredient,
@@ -10,6 +12,7 @@ from recipes.models import (
     ShoppingCart,
     Favorite,
     Follow,
+    ShortLink,
 )
 from users.serializers import UserSerializer
 from http import HTTPStatus
@@ -21,31 +24,39 @@ MAX_COOKING_TIME = 32000
 
 class FavoriteSerializer(serializers.ModelSerializer):
     """Serializer для Подписок."""
-    id = serializers.PrimaryKeyRelatedField(source="recipe", read_only=True)
-    name = serializers.ReadOnlyField(source="recipe.name", read_only=True)
-    image = serializers.ImageField(source="recipe.image", read_only=True)
-    cooking_time = serializers.IntegerField(
-        source="recipe.cooking_time", read_only=True
-    )
+    id = serializers.PrimaryKeyRelatedField(read_only=True)
+    name = serializers.ReadOnlyField()
+    image = serializers.SerializerMethodField()
+    cooking_time = serializers.IntegerField()
 
     class Meta:
         model = Favorite
         fields = ("id", "name", "image", "cooking_time")
 
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image:  # Просто obj.image, а не obj.recipe.image
+            return request.build_absolute_uri(obj.image.url)
+        return None
+
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
     """Serializer для Корзины."""
-    id = serializers.PrimaryKeyRelatedField(source="recipe", read_only=True)
-    name = serializers.ReadOnlyField(source="recipe.name", read_only=True)
-    image = serializers.ImageField(source="recipe.image", read_only=True)
+    id = serializers.PrimaryKeyRelatedField(read_only=True)
+    name = serializers.ReadOnlyField()
+    image = serializers.ImageField()
     cooking_time = serializers.IntegerField(
-        source="recipe.cooking_time", read_only=True
     )
  
-
     class Meta:
         model = ShoppingCart
         fields = ("id", "name", "image", "cooking_time")
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            return request.build_absolute_uri(obj.image.url)
+        return None
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -283,14 +294,21 @@ class FollowSerializer(serializers.ModelSerializer):
         return data
 
 
-class RecipeShortLinkSerializer(serializers.ModelSerializer):
-    """Serializer для короткой ссылки на рецепт"""
+class ShortLinkSerializer(serializers.ModelSerializer):
     short_link = serializers.SerializerMethodField()
 
     class Meta:
-        model = Recipe
-        fields = ("short_link",)
+        model = ShortLink
+        fields = ('short_link',)
 
     def get_short_link(self, obj):
         request = self.context.get('request')
-        return f"http://{request.get_host()}/r/{obj.id}"
+        return request.build_absolute_uri(
+            reverse('short-link-redirect', args=[obj.short_code])
+        )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['short-link'] = data.pop('short_link')
+        return data
+

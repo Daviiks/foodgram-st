@@ -2,6 +2,7 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Q, F
 from users.models import User
+import secrets
 
 MIN_AMOUNT = 1
 MAX_AMOUNT = 32000
@@ -249,3 +250,24 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"Вы подписаны на {self.author}"
+
+def generate_short_code():
+    return secrets.token_urlsafe(8)[:8]
+
+class ShortLink(models.Model):
+    short_code = models.CharField(
+        max_length=20, 
+        primary_key=True, 
+        default=generate_short_code
+    )
+    destination = models.TextField()  # URL назначения
+    recipe = models.OneToOneField(
+        'Recipe', 
+        on_delete=models.CASCADE,
+        related_name='short_link'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Short Link'
+        verbose_name_plural = 'Short Links'
