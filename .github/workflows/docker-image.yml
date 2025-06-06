@@ -57,7 +57,7 @@ jobs:
       # Явно указываем путь к .env файлу через --env-file
       - name: Start services for testing
         run: |
-          docker compose -f ./infra/docker-compose.yml --env-file ./.env up -d --wait
+          docker compose -f ./infra/docker-compose.yml --env-file ./.env up -d --build db backend nginx --wait
 
       - name: Load ingredients
         run: |
