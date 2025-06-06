@@ -46,14 +46,16 @@ jobs:
           push: true
           tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:backend-${{ github.sha }}
       
-      - name: Load initial data
+      - name: Import to PostgreSQL
         run: |
-          docker compose -f ./infra/docker-compose.yml up -d backend db
-          sleep 20
-          docker compose -f ./infra/docker-compose.yml exec -T foodgram-backend mkdir -p /app/data
-          docker compose -f ./infra/docker-compose.yml cp ./data/ingredients.csv foodgram-backend:/app/backend/data/ingredients.csv
-          docker compose -f ./infra/docker-compose.yml exec -T foodgram-backend python manage.py migrate
-          docker compose -f ./infra/docker-compose.yml exec -T foodgram-backend python manage.py load_ingredients /app/backend/data/ingredients.csv
+          # Копируем файл в контейнер с БД
+          docker compose -f ./infra/docker-compose.yml cp ./data/ingredients.csv db:/tmp/
+    
+          # Выполняем импорт
+          docker compose -f ./infra/docker-compose.yml exec -T db psql \
+          -U ${{ secrets.POSTGRES_USER }} \
+          -d ${{ secrets.POSTGRES_DB }} \
+          -c "COPY recipes_ingredient(name, measurement_unit) FROM '/tmp/ingredients.csv' DELIMITER ',' CSV HEADER;"
 
       - name: Start services for testing
         run: |
