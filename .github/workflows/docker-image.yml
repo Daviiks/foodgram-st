@@ -57,9 +57,9 @@ jobs:
       - name: Load initial data
         run: |
           docker compose exec -T foodgram-backend mkdir -p /app/data
-          docker compose cp ./data/ingredients.csv foodgram-backend:/app/data/ingredients.csv
+          docker compose cp ./data/ingredients.csv foodgram-backend:/app/backend/data/ingredients.csv
           docker compose exec -T foodgram-backend python manage.py migrate
-          docker compose exec -T foodgram-backend python manage.py load_ingredients /app/data/ingredients.csv
+          docker compose exec -T foodgram-backend python manage.py load_ingredients /app/backend/data/ingredients.csv
 
       - name: Start services for testing
         run: |
