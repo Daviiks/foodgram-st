@@ -16,7 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Создаем .env файл из Secrets
       - name: Create .env file
         run: |
           cat <<EOF > ./infra/.env
@@ -39,7 +38,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Собираем и пушим образы отдельно (лучше чем compose для CI)
       - name: Build and push backend
         uses: docker/build-push-action@v4
         with:
@@ -66,5 +64,3 @@ jobs:
         with:
           collection: ./infra/postman_collection/foodgram.postman_collection.json
           environment: ./infra/postman_collection/test.postman_environment.json
-          # Добавьте если нужно игнорировать ошибки
-          # bail: false
