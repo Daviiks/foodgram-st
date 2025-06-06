@@ -56,7 +56,8 @@ jobs:
 
       - name: Start services for testing
         run: |
-          docker compose -f ./infra/docker-compose.yml --env-file ./.env up -d --wait
+          docker compose -f ./infra/docker-compose.yml --env-file ./.env up -d backend db
+          docker compose -f ./infra/docker-compose.yml exec -T backend sh -c 'while ! curl -s http://localhost:8000; do sleep 1; done'
 
       - name: Run API tests
         uses: matt-ball/newman-action@master
