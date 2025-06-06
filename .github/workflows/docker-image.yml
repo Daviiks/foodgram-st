@@ -48,11 +48,9 @@ jobs:
       
       - name: Import to PostgreSQL
         run: |
-          # Копируем файл в контейнер с БД
           docker compose -f ./infra/docker-compose.yml cp ./data/ingredients.csv db:/tmp/
     
-          # Выполняем импорт
-          docker compose -f ./infra/docker-compose.yml exec -T db psql \
+          docker compose -f ./infra/docker-compose.yml exec -T db foodgram \
           -U ${{ secrets.POSTGRES_USER }} \
           -d ${{ secrets.POSTGRES_DB }} \
           -c "COPY recipes_ingredient(name, measurement_unit) FROM '/tmp/ingredients.csv' DELIMITER ',' CSV HEADER;"
