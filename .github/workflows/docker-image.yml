@@ -46,27 +46,14 @@ jobs:
           push: true
           tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:backend-${{ github.sha }}
 
-      - name: Build and push frontend
-        uses: docker/build-push-action@v4
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          push: true
-          tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:frontend-${{ github.sha }}
-
-      # Явно указываем путь к .env файлу через --env-file
-      - name: Start services for testing
-        run: |
-          docker compose -f ./infra/docker-compose.yml --env-file ./.env up -d --build db backend nginx --wait
-
-      - name: Load ingredients
-        run: |
-          docker compose exec -T backend python manage.py load_ingredients /app/data/ingredients.csv
-
       - name: Start services for testing (only backend + db)
         run: |
           docker compose -f ./infra/docker-compose.yml up -d backend db
           docker compose -f ./infra/docker-compose.yml exec -T backend sh -c 'while ! curl -s http://localhost:8000; do sleep 1; done'
+
+      - name: Load ingredients
+        run: |
+          docker compose exec -T backend python manage.py load_ingredients /app/data/ingredients.csv
 
       - name: Run API tests
         uses: matt-ball/newman-action@master
