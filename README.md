@@ -3,57 +3,82 @@
 [![Docker CI](https://github.com/Daviiks/foodgram-st/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Daviiks/foodgram-st/actions/workflows/docker-image.yml)
 [![Docker Hub](https://img.shields.io/badge/Docker%20Hub-foodgram--backend-blue)](https://hub.docker.com/r/daviiel/foodgram-backend)
 
-Foodgram - это веб-приложение для публикации рецептов. Пользователи могут создавать свои рецепты, подписываться на других авторов, добавлять рецепты в избранное и в список покупок.
-
-## 🚀 Запуск приложения
+## Запуск приложения
 
 ### Вариант 1: Запуск в режиме DEBUG (SQLite3)
-
-1. **Запуск сервера**:
+1. **Активация виртуального окружения** (рекомендуется):
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Linux/MacOS
+   # или
+   venv\Scripts\activate  # Windows
+2. **Установка зависимостей**:
+   ```bash
+   pip install -r requirements.txt
+3. **Запуск сервера**:
    ```bash
    python manage.py runserver --mode dev
-# Инструкция
-## Запуск приложения c DEBUG и использованием SQLlite3
-Запуск приложения
-Запустить приложение можно двумя способами.
-1 способ в режиме DEBUG: 
-Находясь в папке backend, выполняем команду:
-python manage.py runserver --mode dev
-После создаем супер пользователя
-python manage.py createsuperuser
-Затем создаем миграции и запускаем их:
-python manage.py makemigrations
-python manage.py migrate
-Затем загружаем ингредиенты командой:
-python manage.py load_ingredients --path data/ingredients.csv
-Можно заргузить ещё тестовых user и recipes:
-python manage.py load_recipes --path data/users.json
-python manage.py load_recipes --path data/recipes.json
-Сайт доступен по адресу http://localhost:8000, http://localhost:8000/api
-Панель администратора доступна по адресу http://localhost:8000/admin/.
-Спецификация API доступна по адресу http://localhost:8000/api/docs/
-## Импортирование ингредиентов
-## Конфигурация foodgram-backend
-Инструкция
-Запуск приложения
-Запустить приложение можно двумя способами.
-## Запуск приложения c Docker и использованием PostgreSQL
-2 способ с помощью Docker:
-Находясь в папке infra, выполняем команду:
-docker-compose up --build
+4. **После создаем супер пользователя**:
+   ```bash
+   python manage.py createsuperuser
+5. **Затем создаем миграции и запускаем их**:
+   ```bash
+   python manage.py makemigrations
+   python manage.py migrate
+6. **Затем загружаем ингредиенты командой**:
+   ```bash
+   python manage.py load_ingredients --path data/ingredients.csv   
+7. **Можно заргузить тестовых users и recipes:**:
+   ```bash
+   python manage.py load_recipes --path data/users.json
+   python manage.py load_recipes --path data/recipes.json   
+8. **После создаем супер пользователя**:
+   Сайт доступен по адресу http://localhost:8000, http://localhost:8000/api
+   Панель администратора доступна по адресу http://localhost:8000/admin/.
+   Спецификация API доступна по адресу http://localhost:8000/api/docs/
+
+### Вариант 2: Запуск с Docker (PostgreSQL)
+1. **Перейдите в папку infra**:
+   ```bash
+   cd infra
+2. **Собираем и запускаем контейнеры:**:
 При выполнении этой команды контейнер frontend, описанный в docker-compose.yml, подготовит файлы, необходимые для работы фронтенд-приложения, а затем прекратит свою работу.
-После создаем супер пользователя:
-docker compose run backend python manage.py createsuperuser
-Затем создаем миграции и запускаем их:
-docker-compose exec backend python manage.py makemigrations
-docker-compose exec backend python manage.py migrate
-Затем загружаем ингредиенты командой:
-docker-compose exec backend python manage.py load_ingredients --path data/ingredients.csv
-Можно заргузить ещё тестовых user и recipes:
-docker-compose exec backend python manage.py load_recipes --path data/users.json
-docker-compose exec backend python manage.py load_recipes --path data/recipes.json
-Приложение доступно по адресу http://localhost
-Панель администратора доступна по адресу http://localhost/admin/
-Спецификация API доступна по адресу http://localhost/api/docs/
-Панель администратора доступна по адресу http://localhost/admin/
-Можно выполнить тесты Postman для работоспособности сайта. Все тесты выполнять с бд без пользователей которые создаются тестами. Для повторного тестирования советую удалить пользователей созданные тестами postman из админки или удалить бд.
+   ```bash
+   docker-compose up --build
+3. **После создаем супер пользователя**:
+   ```bash
+   docker compose run backend python manage.py createsuperuser
+4. **Затем создаем миграции и запускаем их**:
+   ```bash
+   docker-compose exec backend python manage.py makemigrations
+   docker-compose exec backend python manage.py migrate
+5. **Затем загружаем ингредиенты командой**:
+   ```bash
+   docker-compose exec backend python manage.py load_ingredients --path data/ingredients.csv   
+6. **Можно заргузить тестовых users и recipes:**:
+   ```bash
+   docker-compose exec backend python manage.py load_recipes --path data/users.json
+   docker-compose exec backend python manage.py load_recipes --path data/recipes.json
+   
+### Доступные адреса
+После успешного запуска приложение будет доступно по следующим адресам:
+
+Режим	Адрес	Описание
+DEBUG	http://localhost:8000	Главная страница
+DEBUG	http://localhost:8000/api	API
+DEBUG	http://localhost:8000/admin	Панель администратора
+DEBUG	http://localhost:8000/api/docs	Документация API
+Docker	http://localhost	Главная страница
+Docker	http://localhost/admin	Панель администратора
+Docker	http://localhost/api/docs	Документация API
+
+### Для тестирования API рекомендуется использовать Postman. Важные замечания:
+
+- Перед началом тестирования убедитесь, что в базе нет пользователей, созданных предыдущими тестами
+
+- Для повторного тестирования:
+
+ -- Удалите тестовых пользователей через админ-панель
+
+ -- Или очистите базу данных полностью
+
