@@ -30,7 +30,7 @@ jobs:
       # 2. Запускаем контейнеры
       - name: Start services
         run: |
-          docker compose -f infra/docker-compose.yml up -d --wait
+          docker compose -f infra/docker-compose.yml up -d backend db --wait
           docker compose -f infra/docker-compose.yml exec -T db \
             sh -c 'while ! pg_isready -U $POSTGRES_USER; do sleep 2; done'
 
