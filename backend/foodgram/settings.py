@@ -5,9 +5,9 @@ load_dotenv(".env", encoding="utf-8")
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = 'django-insecure-nk3!(^m4ene&v1kneyjc!avzz_2p_@oi4$e98e$-2r3r5sn!(*'
 
-DEBUG = os.getenv("DEBUG", "1")
+DEBUG = os.getenv("DEBUG", "1") == "1"
 
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
