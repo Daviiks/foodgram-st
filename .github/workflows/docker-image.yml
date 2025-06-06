@@ -53,7 +53,7 @@ jobs:
 
       - name: Load ingredients
         run: |
-          docker compose -f ./infra/docker-compose.yml exec -T backend python manage.py load_ingredients /app/data/ingredients.csv
+          docker compose -f ./infra/docker-compose.yml exec -T backend python manage.py load_ingredients --path /app/data/ingredients.csv
 
       - name: Run API tests
         uses: matt-ball/newman-action@master
