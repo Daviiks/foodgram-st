@@ -16,9 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Создаем .env файл в корне проекта (где его ищет docker compose)
       - name: Create .env file
         run: |
-          cat <<EOF > ./infra/.env
+          cat <<EOF > ./.env
           DB_ENGINE=${{ secrets.DB_ENGINE }}
           DB_NAME=${{ secrets.DB_NAME }}
           POSTGRES_USER=${{ secrets.POSTGRES_USER }}
@@ -54,10 +55,11 @@ jobs:
           tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:frontend-${{ github.sha }}
 
       - name: Start services for testing
-        run: docker compose -f ./infra/docker-compose.yml up -d --wait
+        run: |
+          docker compose -f ./infra/docker-compose.yml --env-file ./.env up -d --wait
 
       - name: Run API tests
         uses: matt-ball/newman-action@master
         with:
-          collection: ./infra/postman_collection/foodgram.postman_collection.json
-          environment: ./infra/postman_collection/test.postman_environment.json
+          collection: ./postman_collection/foodgram.postman_collection.json
+          environment: ./postman_collection/test.postman_environment.json
