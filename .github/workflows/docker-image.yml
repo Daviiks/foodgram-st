@@ -54,6 +54,17 @@ jobs:
           push: true
           tags: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:frontend-${{ github.sha }}
 
+      - name: Wait for DB to be ready
+        run: |
+          docker compose exec -T foodgram-db sh -c 'while ! pg_isready -U $POSTGRES_USER -d $POSTGRES_DB; do sleep 1; done'
+      
+      - name: Load initial data
+        run: |
+          docker compose exec -T foodgram-backend mkdir -p /app/data
+          docker compose cp ./data/ingredients.csv foodgram-backend:/app/data/ingredients.csv
+          docker compose exec -T foodgram-backend python manage.py migrate
+          docker compose exec -T foodgram-backend python manage.py load_ingredients /app/data/ingredients.csv
+
       - name: Start services for testing
         run: |
           docker compose -f ./infra/docker-compose.yml --env-file ./.env up -d backend db
